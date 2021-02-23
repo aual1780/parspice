@@ -35,6 +35,7 @@ def main(argv):
 
     generate_proto(functions, proto_out, template_dir)
     generate_factory(functions, java_out, template_dir)
+    generate_engine(functions, java_out, template_dir)
 
     for func in functions:
         if func.classification == parse_tree.Classification.NORMAL:
@@ -259,6 +260,38 @@ def generate_java(func, templates, out, template_dir):
             with open(os.path.join(out, '%s%s' % (upper_name, template)), 'w') as out_file:
                 out_file.write(output)
 
+def generate_engine(funcs, out, template_dir):
+    # get imports string (WIP)
+    imports = ''
+
+    # get services string
+    services = ''
+    for func in funcs:
+            upper_name = func.name[0].upper() + func.name[1:]
+
+            services += """
+            @Override
+            public void ###UPPER_NAME###RPC(###UPPER_NAME###Request request, StreamObserver<###UPPER_NAME###Response> responseObserver) {
+
+                ###UPPER_NAME###Response.Builder responseBuilder = ###UPPER_NAME###Response.newBuilder();
+
+                // ** send to dispatcher
+                // ** logic based on behavior??
+
+                // send results back
+                ###UPPER_NAME###Response reply = bundleBuilder.build();
+                responseObserver.onNext(reply);
+                responseObserver.onCompleted();
+            }
+            """.replace('###UPPER_NAME###', upper_name)
+
+    # read and replace
+    with open(os.path.join(template_dir, 'EngineEndpoint.java'), 'r') as template:
+        endpoint = template.read() \
+            .replace('###SERVICES###', services) \
+            .replace('###IMPORTS###', imports)
+        with open(os.path.join(out, 'EngineEndpoint.java'), 'w') as out_file:
+            out_file.write(endpoint)
 
 if __name__ == '__main__':
     main(sys.argv)
