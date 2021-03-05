@@ -129,6 +129,7 @@ def generate_endpoints(funcs, templates, out, template_dir):
                     }
                     responseBuilder.addOutputs(output);
                 }
+                responseBuilder.setBatchID(request.getBatchID());
                 ###UPPER_NAME###Response response = responseBuilder.build();
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
